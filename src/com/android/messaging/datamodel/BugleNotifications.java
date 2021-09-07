@@ -790,6 +790,7 @@ public class BugleNotifications {
             addDownloadMmsAction(notifBuilder, wearableExtender, notificationState);
             addReplyAction(notifBuilder, wearableExtender, notificationState);
             addReadAction(notifBuilder, wearableExtender, notificationState);
+            addWearableVoiceReplyAction(notifBuilder, wearableExtender, notificationState);
         }
 
         // Apply the wearable options and build & post the notification
@@ -832,6 +833,8 @@ public class BugleNotifications {
     }
 
     private static void addReplyAction(final NotificationCompat.Builder notifBuilder,
+    private static void addWearableVoiceReplyAction(final NotificationCompat.Builder notifBuilder,
+
             final WearableExtender wearableExtender, final NotificationState notificationState) {
         if (!(notificationState instanceof MultiMessageNotificationState)) {
             return;
@@ -861,6 +864,15 @@ public class BugleNotifications {
         final NotificationCompat.Action.Builder actionBuilder =
                 new NotificationCompat.Action.Builder(R.drawable.ic_wear_reply,
                         context.getString(replyLabelRes), replyPendingIntent);
+        final RemoteInput.Builder remoteInputBuilder = new RemoteInput.Builder(Intent.EXTRA_TEXT);
+        remoteInputBuilder.setLabel(context.getString(R.string.notification_reply_prompt));
+        actionBuilder.addRemoteInput(remoteInputBuilder.build());
+        notifBuilder.addAction(actionBuilder.build());
+
+        // Support the action on a wearable device
+        final NotificationCompat.Action.Builder wearActionBuilder =
+                new NotificationCompat.Action.Builder(R.drawable.ic_wear_reply,
+                        context.getString(replyLabelRes), replyPendingIntent);
         final String[] choices = context.getResources().getStringArray(
                 R.array.notification_reply_choices);
         final RemoteInput remoteInput = new RemoteInput.Builder(Intent.EXTRA_TEXT).setLabel(
@@ -872,6 +884,9 @@ public class BugleNotifications {
 
         // Support the action on a wearable device as well
         wearableExtender.addAction(actionBuilder.build());
+        remoteInputBuilder.setChoices(choices);
+        wearActionBuilder.addRemoteInput(remoteInputBuilder.build());
+        wearableExtender.addAction(wearActionBuilder.build());
     }
 
     private static void addReadAction(final NotificationCompat.Builder notifBuilder,
